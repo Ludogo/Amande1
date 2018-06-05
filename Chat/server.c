@@ -73,7 +73,7 @@ void CleanUpClient()
 	for (int i = 0; i < clientCount; i++)
 	{
 		client *currentClient = ID_Tube_Client[i];
-		write((*currentClient).pipeHandle, message, sizeof(ChatMessage));
+		write((*currentClient).pipeHandle, &message, sizeof(ChatMessage));
 	}
 }
 
