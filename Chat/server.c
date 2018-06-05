@@ -83,19 +83,23 @@ int main(void)
 	int ID_Tube_serveur;
 	char Tube_serveur[] = "serveur.fifo";
 
+	fprintf(stderr, "You are on the server\n");
+
 	//Création du tube serveur 1
 	if ((mkfifo(Tube_serveur, 0666) != 0) && (errno != EEXIST))
 	{
 		fprintf(stderr, "Impossible de créer le tube serveur 1.\n");
 		exit(EXIT_FAILURE);
 	}
+	fprintf(stderr, "Waiting for first client to connect \n");
+
 	if ((ID_Tube_serveur = open(Tube_serveur, O_RDONLY)) == -1)
 	{
 		fprintf(stderr, "Impossible d'ouvrir l'entrée du tube serveur 1.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	fprintf(stderr, "You are on the server\n");
+	
 
 	while (1) //ici mettre la reception du signal de stop sinon on ne sort jamais
 	{
