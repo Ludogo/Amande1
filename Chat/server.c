@@ -20,10 +20,10 @@ int clientCount = 0;
 /**
  * gère la crétion du pipe d'envoie des message vers les clients
  * */
-int CreateClientPipe(char *nickName)
+int CreateClientPipe(char* nickName)
 {
 	char tubeName[265];
-	sprintf(tubeName, "%s.fifo", nickName);
+	sprintf(tubeName, "/tmp/%s.fifo", nickName);
 
 	int ret = mkfifo(tubeName, 0666);
 	if (ret == 0)
@@ -33,13 +33,10 @@ int CreateClientPipe(char *nickName)
 		//mémorise les infos cliet
 		strcpy((*newClient).nickName, nickName);
 		strcpy((*newClient).tubeName, tubeName);
-		(*newClient).pipeHandle = open(tubeName, O_WRONLY);
-		ret = open(tubeName, O_WRONLY);
-		if (ret == 0)
-		{
-			//mémorise le client en mémoire et incrémente le nombre de client
-			ID_Tube_Client[clientCount++] = newClient;
-		}
+		mkfifo(tubeName, 0666);
+		(*newClient).pipeHandle = open(tubeName, O_WRONLY | O_NDELAY);
+		ID_Tube_Client[clientCount++] = newClient;
+
 		//TODO traiter les erreurs
 	}
 
@@ -68,7 +65,7 @@ void CleanUpClient()
  * Envoie un message à tous les clients
  * 
  * */
- void WriteToAll(ChatMessage *message)
+void WriteToAll(ChatMessage *message)
 {
 	for (int i = 0; i < clientCount; i++)
 	{
@@ -81,7 +78,7 @@ void CleanUpClient()
 int main(void)
 {
 	int ID_Tube_serveur;
-	char Tube_serveur[] = "serveur.fifo";
+	char Tube_serveur[] = "/tmp/serveur.fifo";
 
 	fprintf(stderr, "You are on the server\n");
 
@@ -99,14 +96,12 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	
-
 	while (1) //ici mettre la reception du signal de stop sinon on ne sort jamais
 	{
 		ChatMessage newMessage;
 		//Lecture du tube de réception
 		read(ID_Tube_serveur, &newMessage, sizeof(ChatMessage));
-		fprintf(stderr, "%s wrote a message", newMessage.nickName);
+		fprintf(stderr, "%s wrote a message : %s \n", newMessage.nickName, newMessage.payLoad);
 
 		if (strlen(newMessage.payLoad) == 0)
 		{
@@ -114,8 +109,8 @@ int main(void)
 			CreateClientPipe(newMessage.nickName);
 			//envoi d'un petit message à tout le monde
 			ChatMessage welcome;
-			strcpy(&welcome.nickName, "server");
-			sprintf(&welcome.payLoad, "Welcome to %s", welcome.payLoad);
+			strcpy(welcome.nickName, "server");
+			sprintf(welcome.payLoad, "Welcome to %s", welcome.payLoad);
 			welcome.payLoadLength = strlen(welcome.payLoad);
 			WriteToAll(&welcome);
 		}

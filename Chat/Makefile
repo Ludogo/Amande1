@@ -6,7 +6,7 @@ INCLUDE=.
 
 # option de compilation pour le d�veloppement
 CFLAGS= -g  -Wall -std=gnu99
-LDLIBS=-lutils
+LDLIBS=-pthread 
 LDFLAGS=-L.
 
 # option de compilation pour la version final avec optimisation
@@ -22,7 +22,7 @@ serveur : server.o
 	$(CC)   -o serveur server.o
 
 chat1 : chat1.o
-	$(CC)   -o chat1 chat1.o
+	$(CC)  $(LDLIBS)  -o chat1 chat1.o
 
 chat2 : chat2.o
 	$(CC)   -o chat2 chat2.o
