@@ -1,0 +1,38 @@
+
+# le compilateur utilise gcc
+CC=gcc
+# l�emplacement des fichiers d�en-t�te, ici le repertoire courant .
+INCLUDE=.
+
+# option de compilation pour le d�veloppement
+CFLAGS= -g  -Wall -std=gnu99
+LDLIBS=-lutils
+LDFLAGS=-L.
+
+# option de compilation pour la version final avec optimisation
+# CFLAGS= -O  -Wall
+# appli : server.o client.o
+# 	$(CC)   -o appli server.o client.o
+all : serveur client
+
+lib: libutils.a
+serveur : server.o
+	$(CC)   -o serveur server.o 
+client : client.o
+	$(CC)   -o client client.o 
+
+libutils.a: utils.o
+	$(AR) -rc $@ $^
+server.o : server.c utils.h
+	$(CC)  -I$(INCLUDE) $(CFLAGS)  -c server.c
+client.o : client.c utils.h
+	$(CC)  -I$(INCLUDE) $(CFLAGS)  -c client.c
+# #  l�option -c indique  il s�agit que d�une compilation
+clean:
+	$(RM) *.o $(TARGETS)
+	$(RM) server client $(TARGETS)
+
+mrproper: clean
+	$(RM) *.a
+
+.PHONY: clean  mrproper lib all
