@@ -13,7 +13,7 @@
 
 #include "utils.h"
 
-//tableau pour mémoriser les client
+//tableau pour mémoriser les clients
 client *ID_Tube_Client[256];
 int clientCount = 0;
 
@@ -59,6 +59,8 @@ void CleanUpClient()
 		close((*currentClient).pipeHandle);
 		//supprime le fichier fifo
 		remove((*currentClient).tubeName);
+		//supprime en mémoire
+		free(currentClient);
 	}
 }
 
