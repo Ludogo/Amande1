@@ -22,7 +22,7 @@ void *ReadMessages(void *x_void_ptr)
 	while (*stop != true)
 	{
 		read(clientPipeNameHandle, &newMessage, sizeof(ChatMessage));
-		fprintf(stderr, "(%s) : %s", newMessage.nickName, newMessage.payLoad);
+		fprintf(stderr, "(%s) : %s\n", newMessage.nickName, newMessage.payLoad);
 	}
 
 	printf("reader is finished\n");
@@ -34,13 +34,9 @@ void *ReadMessages(void *x_void_ptr)
 int main(void)
 {
 	int ID_Tube_client_1, ID_Tube_serveur;
-	char chaine[TAILLE_MESSAGE];
 	char chaine_emission[TAILLE_MESSAGE];
-	char chaine_reception[TAILLE_MESSAGE];
-	char Tube_client_1[] = "chat1.fifo";
 	char Tube_serveur[] = "/tmp/serveur.fifo";
-	int anti_fork_bomb = 0;
-	int _pid = -1;
+
 	bool isConnected = false;
 	bool stop = false;
 	pthread_t threadLecteur;
@@ -61,9 +57,13 @@ int main(void)
 
 	while (!strstr(chaine_emission, "/CLOSE"))
 	{
-
+		char chaine[TAILLE_MESSAGE];
 		fgets(chaine, TAILLE_MESSAGE, stdin);
-		sprintf(chaine_emission, "clt1 : %s", chaine);
+		//delete /N at the end of line
+		strtok(chaine, "\n");
+		//reset chaine emission
+		memset(chaine_emission, 0, TAILLE_MESSAGE);
+		sprintf(chaine_emission, "%s", chaine);
 
 		if (strstr(chaine_emission, "/CONNECT"))
 		{
@@ -73,6 +73,8 @@ int main(void)
 				char clientPipeName[261];
 				fprintf(stdout, "enter nick name :\n");
 				fgets(nickName, 256, stdin);
+				//delete /N at the end of line
+				strtok(nickName, "\n");
 				ChatMessage message;
 				strcpy(message.nickName, nickName);
 				//demande la connexion
@@ -84,7 +86,7 @@ int main(void)
 				sleep(1);
 
 				//connexion au pipe de lecture
-				if ((clientPipeNameHandle = open(clientPipeName, O_RDONLY | O_NDELAY)) == -1)
+				if ((clientPipeNameHandle = open(clientPipeName, O_RDONLY)) == -1)
 				{
 					fprintf(stderr, "Enable to connect to client pipe\n");
 					exit(EXIT_FAILURE);
@@ -96,13 +98,14 @@ int main(void)
 					fprintf(stderr, "Error creating thread\n");
 					return 1;
 				}
+				isConnected = true;
 			}
 			else
 			{
 				fprintf(stderr, "you must close before connect \n");
 			}
 		}
-		else
+		else if (isConnected == true)
 		{
 			ChatMessage messageToSend;
 			strcpy(messageToSend.nickName, nickName);

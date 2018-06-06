@@ -33,8 +33,7 @@ int CreateClientPipe(char* nickName)
 		//mémorise les infos cliet
 		strcpy((*newClient).nickName, nickName);
 		strcpy((*newClient).tubeName, tubeName);
-		mkfifo(tubeName, 0666);
-		(*newClient).pipeHandle = open(tubeName, O_WRONLY | O_NDELAY);
+		(*newClient).pipeHandle = open(tubeName, O_WRONLY);
 		ID_Tube_Client[clientCount++] = newClient;
 
 		//TODO traiter les erreurs
@@ -70,7 +69,7 @@ void WriteToAll(ChatMessage *message)
 	for (int i = 0; i < clientCount; i++)
 	{
 		client *currentClient = ID_Tube_Client[i];
-		write((*currentClient).pipeHandle, &message, sizeof(ChatMessage));
+		write((*currentClient).pipeHandle, message, sizeof(ChatMessage));
 	}
 }
 
@@ -110,7 +109,7 @@ int main(void)
 			//envoi d'un petit message à tout le monde
 			ChatMessage welcome;
 			strcpy(welcome.nickName, "server");
-			sprintf(welcome.payLoad, "Welcome to %s", welcome.payLoad);
+			sprintf(welcome.payLoad, "Welcome to %s", newMessage.nickName);
 			welcome.payLoadLength = strlen(welcome.payLoad);
 			WriteToAll(&welcome);
 		}
