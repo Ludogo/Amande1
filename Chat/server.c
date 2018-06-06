@@ -20,20 +20,23 @@ int clientCount = 0;
 /**
  * gère la crétion du pipe d'envoie des message vers les clients
  * */
-int CreateClientPipe(char* nickName)
+int CreateClientPipe(char *nickName)
 {
 	char tubeName[265];
 	sprintf(tubeName, "/tmp/%s.fifo", nickName);
 
+	//création du tube client
 	int ret = mkfifo(tubeName, 0666);
 	if (ret == 0)
 	{
-		//creation dynamique du nouveau client
+		//creation dynamique du nouveau client en mémoire
 		client *newClient = malloc(sizeof(client));
-		//mémorise les infos cliet
+		//mémorise les infos client
 		strcpy((*newClient).nickName, nickName);
 		strcpy((*newClient).tubeName, tubeName);
+		//ouverture du pipe
 		(*newClient).pipeHandle = open(tubeName, O_WRONLY);
+		//mémorisation du client dans la liste
 		ID_Tube_Client[clientCount++] = newClient;
 
 		//TODO traiter les erreurs
@@ -66,6 +69,7 @@ void CleanUpClient()
  * */
 void WriteToAll(ChatMessage *message)
 {
+	//parcours de la liste des clients et envoie à tout le monde
 	for (int i = 0; i < clientCount; i++)
 	{
 		client *currentClient = ID_Tube_Client[i];
@@ -125,6 +129,9 @@ int main(void)
 		perror("Erreur fermeture du tube serveur");
 		exit(EXIT_FAILURE);
 	}
+
+	CleanUpClient();
+
 	fprintf(stderr, "fermeture du serveur\n");
 
 	return EXIT_SUCCESS;

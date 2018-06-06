@@ -14,6 +14,10 @@
 
 int clientPipeNameHandle;
 
+/***
+ * fonction appelée par le thread de lecture
+ * boucle sur le pipe de lecture et affiche les message en provenance du serveur
+ * */
 void *ReadMessages(void *x_void_ptr)
 {
 	ChatMessage newMessage;
@@ -48,7 +52,7 @@ int main(void)
 	// 	system("./serveur");
 	// }
 
-	//connexion au serveur
+	//connexion au serveur il attend jusqu'à ce que le serveur se connect
 	if ((ID_Tube_serveur = open(Tube_serveur, O_WRONLY)) == -1)
 	{
 		fprintf(stderr, "Impossible d'ouvrir l'entrée du tube serveur 1.\n");
@@ -58,6 +62,7 @@ int main(void)
 	while (!strstr(chaine_emission, "/CLOSE"))
 	{
 		char chaine[TAILLE_MESSAGE];
+		//lecture clavier
 		fgets(chaine, TAILLE_MESSAGE, stdin);
 		//delete /N at the end of line
 		strtok(chaine, "\n");
@@ -65,6 +70,7 @@ int main(void)
 		memset(chaine_emission, 0, TAILLE_MESSAGE);
 		sprintf(chaine_emission, "%s", chaine);
 
+		//COMMANDE CONNECT pour se connecter
 		if (strstr(chaine_emission, "/CONNECT"))
 		{
 			if (isConnected == false)
@@ -77,27 +83,27 @@ int main(void)
 				strtok(nickName, "\n");
 				ChatMessage message;
 				strcpy(message.nickName, nickName);
-				//demande la connexion
+				//demande la connexion au serveur = message vide
 				write(ID_Tube_serveur, &message, sizeof(ChatMessage));
 
 				sprintf(clientPipeName, "/tmp/%s.fifo", nickName);
 
-				//laisse le temp au serveur de faire la création
+				//laisse le temp au serveur de faire la création = dodo 1 seconde
 				sleep(1);
 
-				//connexion au pipe de lecture
+				//connexion au pipe de lecture créé par le serveur
 				if ((clientPipeNameHandle = open(clientPipeName, O_RDONLY)) == -1)
 				{
 					fprintf(stderr, "Enable to connect to client pipe\n");
 					exit(EXIT_FAILURE);
 				}
-				//lance le thread de lecture
-				/* create a second thread which executes inc_x(&x) */
+				//lance le thread de lecture en passant un pointeur sur le boolean d'arrêt				
 				if (pthread_create(&threadLecteur, NULL, ReadMessages, &stop))
 				{
 					fprintf(stderr, "Error creating thread\n");
 					return 1;
 				}
+				//mémorise qu'on est connecté
 				isConnected = true;
 			}
 			else
@@ -107,11 +113,12 @@ int main(void)
 		}
 		else if (isConnected == true)
 		{
+			//envoie d'un message au serveur
 			ChatMessage messageToSend;
-			strcpy(messageToSend.nickName, nickName);
-			strcpy(messageToSend.payLoad, chaine_emission);
+			strcpy(messageToSend.nickName, nickName); //copie mon pseudo
+			strcpy(messageToSend.payLoad, chaine_emission); //copie l'entrée capturée : le message
 			messageToSend.payLoadLength = strlen(chaine_emission);
-			write(ID_Tube_serveur, &messageToSend, sizeof(ChatMessage));
+			write(ID_Tube_serveur, &messageToSend, sizeof(ChatMessage));//envoie 
 		}
 	}
 
