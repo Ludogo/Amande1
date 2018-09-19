@@ -35,6 +35,7 @@ int CreateClientPipe(char *nickName)
 		strcpy((*newClient).nickName, nickName);
 		strcpy((*newClient).tubeName, tubeName);
 		//ouverture du pipe
+		// si il existe deja, ne pas créer le pipe => erreur
 		(*newClient).pipeHandle = open(tubeName, O_WRONLY);
 		//mémorisation du client dans la liste
 		ID_Tube_Client[clientCount++] = newClient;
@@ -65,7 +66,7 @@ void CleanUpClient()
 
 /**
  * Envoie un message à tous les clients
- * 
+ *
  * */
 void WriteToAll(ChatMessage *message)
 {
@@ -99,6 +100,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
+	//mettre autre chose que while 1 => une condition de sortie
 	while (1) //ici mettre la reception du signal de stop sinon on ne sort jamais
 	{
 		ChatMessage newMessage;
