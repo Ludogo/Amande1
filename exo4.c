@@ -3,7 +3,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-/* réécrire la fonction 'system' -> lance 'bash -c'*/
+/* ÉNNONCÉ : réécrire la fonction 'system' -> lance 'bash -c'*/
+
+
 /* The  system()  library  function uses fork(2) to create a child process
        that executes the shell command specified in command using execl(3)  as
        follows:
@@ -29,7 +31,7 @@ void exit_if(int cond, const char* prefix)
 
 int main(int argc, const char *argv[])
 {
-  execl("/bin/sh", "sh", argv[1], (char *) 0, (char *) 0); //bon ça marche mais c'est interminable -> manipulation de signaux
+  execl("/bin/sh", "sh", argv[1], (char *) 0, (char *) 0); //bon ça marche mais c'est interminable -> manipulation de signaux?
   perror("execve");
   exit(EXIT_FAILURE);
 }
